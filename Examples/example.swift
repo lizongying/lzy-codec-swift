@@ -1,4 +1,4 @@
-import Lzy // ① 导入你的库（和 Package.swift 里 products.name 一致）
+import Lzy
 
 // 测试用例（包含中文、Emoji，验证跨语言兼容性）
 let testStr = "Hello 世界！😀"

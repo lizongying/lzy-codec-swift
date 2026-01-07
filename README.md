@@ -5,8 +5,6 @@ swift實現。
 
 [github](https://github.com/lizongying/lzy-codec-swift)
 
-[maven](https://mvnrepository.com/artifact/io.github.lizongying/lzy-codec)
-
 更多cli工具請參考 [go](https://github.com/lizongying/lzy-codec-go)
 
 ## Other languages
@@ -25,38 +23,51 @@ swift實現。
 
 ## Install
 
-* maven
-    ```
-    <!-- https://mvnrepository.com/artifact/io.github.lizongying/lzy-codec -->
-    <dependency>
-        <groupId>io.github.lizongying</groupId>
-        <artifactId>lzy-codec</artifactId>
-        <version>0.1.0</version>
-    </dependency>
-    ```
+* SPM
 
-* gradle
-    ```
-    // https://mvnrepository.com/artifact/io.github.lizongying/lzy-codec
-    implementation("io.github.lizongying:lzy-codec:0.1.0")
+    ```swift
+    dependencies: [
+    .package(url: "https://github.com/lizongying/lzy-codec-swift", branch: "main") // 拉取 main 分支最新代碼（適合測試/嘗鮮）
+    ],
+    targets: [
+    .target(
+        name: "MyApp", // 【必改】替換為你專案的 Target 名稱
+        dependencies: [
+            .product(name: "LzyCodec", package: "lzy-codec-swift")
+        ]
+    )
+    ]
     ```
 
 ## Examples
 
-```kt
-import io.github.lizongying.Lzy.decodeToString
-import io.github.lizongying.Lzy.encodeFromString
+```swift
+import Lzy
 
-fun main() {
-    val testStr = "Hello 世界！LZY编码测试😀" // 包含Emoji（大于0xFFFF的字符）
-    println("原始字符串: $testStr")
+// 测试用例（包含中文、Emoji，验证跨语言兼容性）
+let testStr = "Hello 世界！😀"
+print("原始字符串：\(testStr)")
 
-    // 编码流程
-    val lzyBytes = encodeFromString(testStr)
-    println("LZY编码字节: ${lzyBytes.contentToString()}")
+// 1. 字符串 → LZY 字节序列
+let lzyData = Lzy.encodeFromString(testStr)
+print("LZY 编码 Data：\(lzyData)")
 
-    // 解码流程
-    val decodedStr = decodeToString(lzyBytes)
-    println("解码后字符串: $decodedStr")
+// 2. LZY 字节序列 → 字符串
+do {
+    let decodedStr = try Lzy.decodeToString(lzyData)
+    print("解码后字符串：\(decodedStr)")
+    print("字符串一致性校验：\(testStr == decodedStr)") // true
+} catch {
+    print("解码失败：\(error.localizedDescription)")
+}
+
+// 3. UTF-8 Data → LZY Data → UTF-8 Data
+do {
+    let utf8Data = testStr.data(using: .utf8)!
+    let lzyData2 = try Lzy.encodeFromBytes(utf8Data)
+    let decodedUtf8Data = try Lzy.decodeToBytes(lzyData2)
+    print("UTF-8 Data 一致性校验：\(utf8Data == decodedUtf8Data)") // true
+} catch {
+    print("字节流转换失败：\(error.localizedDescription)")
 }
 ```
